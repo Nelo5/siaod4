@@ -7,11 +7,10 @@
 using namespace std;
 
 string get2word(string s) {
-	return s;
-	//if (s == "") { return "";}
-	//int l = s.find(" ");
-	//int r = s.find(" ", l + 1);
-	//return s.substr(l + 1, r - l);
+	if (s == "") { return "";}
+	int l = s.find(" ");
+	int r = s.find(" ", l + 1);
+	return s.substr(l + 1, r - l);
 }
 
 bool compare_strings(string str1, string str2) {
@@ -165,9 +164,9 @@ int main()
 	string B = "C:\\Users\\user\\Desktop\\B.txt";
 	string C = "C:\\Users\\user\\Desktop\\C.txt";
 	string* arr = new string[6]{" Vergil "," 2 ", " Light ", " 1 "," Acheron "};
-	quick_sort(arr, 0, 5);
+	quick_sort(arr, 0, 4);
 	cout << arr[0] << endl;
-	print_array(arr, 6);
+	print_array(arr, 5);
 	//natural_partition(A, B, C, 3, lenB, lenC);
 	//for (int i = 0; i <= log2(35) ; i++) {
 	//	partition(A, B, C, pow(2.,i),lenB,lenC);
