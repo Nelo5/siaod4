@@ -34,7 +34,7 @@ void quick_sort(string* a, int first, int last) {
 	int i = first;
 	int j = last;
 	string pivot = get2word(a[(i + j) / 2]);
-	cout << pivot << endl;
+	//cout << pivot << endl;
 	while (i <= j) {
 		//print_array(a, j - i+1);
 		while (get2word(a[i]).compare(pivot)<0) { i++; }
@@ -126,26 +126,28 @@ void natural_partition(string file1, string file2, string file3, int size, int& 
 	ifstream A(file1);
 	ofstream B(file2);
 	ofstream C(file3);
-	string* buff = new string[size+1];
+	string* buff = new string[size];
 	int counter = 0;
 	string s = "";
 	while (getline(A, s)) {
 		if (counter % (2*size) < size) {
 			buff[counter % (size)] = s;
+			print_array(buff, counter % size);
 			if (counter % (size) == size-1 || A.eof()) {
 				quick_sort(buff, 0, counter % (size));
 				for (int i = 0; i < counter % (size);i++) {
-					cout << buff[i] << endl;
+					//cout << buff[i] << endl;
 					B << buff[i] << endl;
 				}
 			}
 		}
 		else if (counter % (2 * size) < 2*size) {
 			buff[counter % (size)] = s;
+			print_array(buff, counter % size);
 			if (counter % (size) == size - 1 || A.eof()) {
 				quick_sort(buff, 0, counter % (size));
 				for (int i = 0; i < counter % (size); i++) {
-					cout << buff[i] << endl;
+					//cout << buff[i] << endl;
 					C << buff[i] << endl;
 				}
 			}
@@ -163,11 +165,11 @@ int main()
 	string A = "C:\\Users\\user\\Desktop\\A.txt";
 	string B = "C:\\Users\\user\\Desktop\\B.txt";
 	string C = "C:\\Users\\user\\Desktop\\C.txt";
-	string* arr = new string[6]{" Vergil "," 2 ", " Light ", " 1 "," Acheron "};
-	quick_sort(arr, 0, 4);
-	cout << arr[0] << endl;
-	print_array(arr, 5);
-	//natural_partition(A, B, C, 3, lenB, lenC);
+	string* arr = new string[3]{" Vergil ", " Light "," Acheron "};
+	//quick_sort(arr, 0, 4);
+	//cout << arr[0] << endl;
+	//print_array(arr, 5);
+	natural_partition(A, B, C, 3, lenB, lenC);
 	//for (int i = 0; i <= log2(35) ; i++) {
 	//	partition(A, B, C, pow(2.,i),lenB,lenC);
 	//	merge(A, B, C, pow(2., i),lenB,lenC);
