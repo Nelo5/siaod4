@@ -4,6 +4,7 @@
 #include <iostream>
 #include <string>
 #include <cmath>
+#include <chrono> 
 using namespace std;
 
 string get2word(string s) {
@@ -13,30 +14,11 @@ string get2word(string s) {
 	return s.substr(l + 1, r - l);
 }
 
-bool compare_strings(string str1, string str2) {
-	for (int i = 0; i < min(str1.length(), str2.length()); i++) {
-		if (tolower(str2[i]) < tolower(str1[i])) {
-			return false;
-		}
-		else if (tolower(str2[i]) > tolower(str1[i])) {
-			return true;
-		}
-	}
-	return true;
-}
-void print_array(string* a,int n) {
-	for (int i = 0; i < n;i++) {
-		cout << a[i] << " ";
-	}
-	cout << endl;
-}
 void quick_sort(string* a, int first, int last) {
 	int i = first;
 	int j = last;
 	string pivot = get2word(a[(i + j) / 2]);
-	//cout << pivot << endl;
 	while (i <= j) {
-		//print_array(a, j - i+1);
 		while (get2word(a[i]).compare(pivot)<0) { i++; }
 		while (get2word(a[j]).compare(pivot) > 0) { j--; }
 		if (i <= j) {
@@ -45,13 +27,8 @@ void quick_sort(string* a, int first, int last) {
 			j--;
 		}
 	}
-	//print_array(a, last-first);
-	if (last > i) {
-		quick_sort(a, i, last);
-	}
-	if (first < j) {
-		quick_sort(a, first, j+1);
-	}
+	if (last > i) {quick_sort(a, i, last);}
+	if (first < j) {quick_sort(a, first, j);}
 }
 
 
@@ -63,18 +40,18 @@ void partition(string file1, string file2, string file3, int size, int &lenB, in
 	string s = "";
 	while (getline(A, s)) {
 		if ((counter/size) % 2 == 0) {
-			cout << s<<endl;
 			B<<s<<endl;
 			lenB++;
 		}
 		else {
 			C << s << endl;
-			cout << s << endl;
 			lenC++;
 		}
 		counter++;
 	}
-	cout << counter<<endl;
+	A.close();
+	B.close();
+	C.close();
 }
 
 void merge(string file1, string file2, string file3, int size, int& lenB, int& lenC) {
@@ -85,10 +62,20 @@ void merge(string file1, string file2, string file3, int size, int& lenB, int& l
 	string s2 = "";
 	int counter1 = 0;
 	int counter2 = 0;
-	if (lenB > 0) { getline(B, s1); }
-	if (lenC > 0) { getline(C, s2); }
+	getline(B, s1);
+	getline(C, s2);
 	while (lenB + lenC > 0) {
-		if (counter1 == size && counter2 < size) {
+		if (lenB == 0) {
+			A << s2 << endl;
+			lenC--;
+			getline(C, s2);
+		}
+		else if (lenC == 0) {
+			A << s1 << endl;
+			lenB--;
+			getline(B, s1);
+		}
+		else if (counter1 == size && counter2 < size) {
 			A << s2 << endl;
 			counter2++;
 			lenC--;
@@ -105,7 +92,7 @@ void merge(string file1, string file2, string file3, int size, int& lenB, int& l
 			counter2 = 0;
 		}
 		else if (counter1 < size && counter2 < size) {
-			if (compare_strings(get2word(s1), get2word(s2))) {
+			if (get2word(s1).compare (get2word(s2))<0) {
 				A << s1 << endl;
 				counter1++;
 				lenB--;
@@ -119,68 +106,174 @@ void merge(string file1, string file2, string file3, int size, int& lenB, int& l
 			}
 		}
 	}
+	A.close();
+	B.close();
+	C.close();
 }
 
 
-void natural_partition(string file1, string file2, string file3, int size, int& lenB, int& lenC) {
-	ifstream A(file1);
-	ofstream B(file2);
-	ofstream C(file3);
+void prenatural_partition(string file1, string file2, string file3, int size) {
+	fstream A(file1, ios::in);
+	fstream B(file2, ios::out);
+	fstream C(file3, ios::out);
 	string* buff = new string[size];
 	int counter = 0;
+	bool Bf = true;
+	bool Cf = false;
 	string s = "";
 	while (getline(A, s)) {
-		if (counter % (2*size) < size) {
-			buff[counter % (size)] = s;
-			print_array(buff, counter % size);
-			if (counter % (size) == size-1 || A.eof()) {
+		if (counter % size < size) {
+			buff[counter % size] = s;
+			if (counter % size == size - 1 || A.rdstate()) {
 				quick_sort(buff, 0, counter % (size));
-				for (int i = 0; i < counter % (size);i++) {
-					//cout << buff[i] << endl;
-					B << buff[i] << endl;
+				for (int i = 0; i <= counter%size; i++) {
+					if (Bf) { B << buff[i] << endl; }
+					if (Cf) { C << buff[i] << endl; }
 				}
-			}
-		}
-		else if (counter % (2 * size) < 2*size) {
-			buff[counter % (size)] = s;
-			print_array(buff, counter % size);
-			if (counter % (size) == size - 1 || A.eof()) {
-				quick_sort(buff, 0, counter % (size));
-				for (int i = 0; i < counter % (size); i++) {
-					//cout << buff[i] << endl;
-					C << buff[i] << endl;
-				}
+				swap(Bf, Cf);
 			}
 		}
 		counter++;
 	}
-	cout << counter << endl;
+	A.close();
+	B.close();
+	C.close();
+	A.open(file1, ios::out);
+	B.open(file2, ios::in);
+	C.open(file3, ios::in);
+	getline(B, s);
+	A << s;
+	while (getline(B, s)) { A << endl << s; }
+	while (getline(C, s)) { A << endl << s; }
+	A.close();
+	B.close();
+	C.close();
+}
+
+void natural_partition(string file1, string file2, string file3, int& lenB, int& lenC){
+	fstream A(file1, ios::in );
+	fstream B(file2, ios::out);
+	fstream C(file3, ios::out);
+	string cur = "";
+	string prev = "";
+	bool Bf = true;
+	bool Cf = false;
+	while (getline(A, cur)) {
+		if (get2word(cur).compare(get2word(prev))<0) {
+			swap(Bf, Cf);
+		}
+		if (Cf) { C << cur << endl; lenC++; }
+		if (Bf) { B << cur << endl; lenB++; }
+		prev = cur;
+	}
+	A.close();
+	B.close();
+	C.close();
+}
+
+void natural_merge(string file1, string file2, string file3, int& lenB, int& lenC) {
+	fstream A(file1, ios::out);
+	fstream B(file2, ios::in);
+	fstream C(file3, ios::in);
+	string cur1 = "";
+	string prev1 = "";
+	string cur2 = "";
+	string prev2 = "";
+	bool Bf = true;
+	bool Cf = true;
+	getline(B, cur1);
+	getline(C, cur2);
+	while (lenB + lenC > 0) {
+		if (get2word(cur1).compare(get2word(prev1)) < 0) { Bf = false; }
+		if (get2word(cur2).compare(get2word(prev2)) < 0) { Cf = false; }
+		if (!Bf && !Cf) { Bf = true; Cf = true; prev1 = ""; prev2 = ""; }
+		if (lenB == 0) {
+			A << cur2 << endl;
+			lenC--;
+			getline(C, cur2);
+		}
+		else if (lenC == 0) {
+			A << cur1 << endl;
+			lenB--;
+			getline(B, cur1);
+		}
+		else if (Bf && Cf) {
+			if (get2word(cur1).compare(get2word(cur2))<0) {
+				A << cur1 << endl;
+				lenB--;
+				prev1 = cur1;
+				getline(B, cur1);
+			}
+			else {
+				A << cur2 << endl;
+				lenC--;
+				prev2 = cur2;
+				getline(C, cur2);
+			}
+		}
+		else if (Bf) {
+			A << cur1 << endl;
+			lenB--;
+			prev1 = cur1;
+			getline(B, cur1);
+		}
+		else if (Cf) {
+			A << cur2 << endl;
+			lenC--;
+			prev2 = cur2;
+			getline(C, cur2);
+		}
+	}
+	A.close();
+	B.close();
+	C.close();
+}
+
+void mergeSort(string file1, string file2, string file3) {
+	auto start = chrono::system_clock::now();
+	int lenB = 0;
+	int lenC = 0;
+	int size = 1;
+	while (true) {
+		partition(file1, file2, file3, size, lenB, lenC);
+		if (lenC == 0) {
+			merge(file1, file2, file3, size, lenB, lenC);
+			auto end = chrono::system_clock::now();
+			cout << chrono::duration_cast<chrono::milliseconds>(end - start).count() << " - ms\n";
+			return;
+		}
+		merge(file1, file2, file3, size, lenB, lenC);
+		size *= 2;
+	}
+}
+
+void naturalMergeSort(string file1, string file2, string file3, int size) {
+	auto start = chrono::system_clock::now();
+	int lenB = 0;
+	int lenC = 0;
+	prenatural_partition(file1, file2, file3, size);
+	while (true) {
+		natural_partition(file1, file2, file3, lenB, lenC);
+		if (lenC == 0) {
+			natural_merge(file1, file2, file3, lenB, lenC);
+			auto end = chrono::system_clock::now();
+			cout << chrono::duration_cast<chrono::milliseconds>(end - start).count() << " - ms\n";
+			return;
+		}
+		natural_merge(file1, file2, file3, lenB, lenC);
+	}
+
 }
 
 
 int main()
 {
-	int lenB = 0;
-	int lenC = 0;
 	string A = "C:\\Users\\user\\Desktop\\A.txt";
 	string B = "C:\\Users\\user\\Desktop\\B.txt";
 	string C = "C:\\Users\\user\\Desktop\\C.txt";
-	string* arr = new string[3]{" Vergil ", " Light "," Acheron "};
-	//quick_sort(arr, 0, 4);
-	//cout << arr[0] << endl;
-	//print_array(arr, 5);
-	natural_partition(A, B, C, 3, lenB, lenC);
-	//for (int i = 0; i <= log2(35) ; i++) {
-	//	partition(A, B, C, pow(2.,i),lenB,lenC);
-	//	merge(A, B, C, pow(2., i),lenB,lenC);
-	//}
-	//partition(A, B, C, 1);
-	//merge(A, B, C, 1);
-	//cout << counterB<<endl;
-	//cout << counterC<<endl;
-	//A.close();
-	//merge("C:\\Users\\user\\Desktop\\A.txt", "C:\\Users\\user\\Desktop\\B.txt", "C:\\Users\\user\\Desktop\\C.txt", i);
-
+	//mergeSort(A, B, C);
+	naturalMergeSort(A, B, C, 36);
+	
 }
 
 
